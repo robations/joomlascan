@@ -1,0 +1,25 @@
+{
+  "name": "joomlascan",
+  "version": "0.0.0",
+  "description": "Searches paths for Joomla installs and outputs the installed version number.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bluebird": "^3.1.1",
+    "byline": "^4.2.1",
+    "cli-table2": "^0.1.9",
+    "is-there": "^4.3.1",
+    "lodash": "^4.0.0",
+    "meow": "^3.7.0",
+    "rx": "^4.0.7",
+    "rx-node": "^1.0.1"
+  },
+  "preferGlobal": true,
+  "bin": {
+    "joomlascan": "index.js"
+  }
+}
