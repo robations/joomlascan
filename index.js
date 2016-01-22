@@ -119,10 +119,6 @@ var version$ = dir$
     )
 ;
 
-dir$.forEach(function (x) {
-    //console.log(x);
-});
-
 version$.forEach(function (x) {
     var table = new Table({
         head: ["Path to Joomla install", "Current version"]
