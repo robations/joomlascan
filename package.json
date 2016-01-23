@@ -1,6 +1,6 @@
 {
   "name": "joomlascan",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Searches paths for Joomla installs and outputs the installed version number.",
   "main": "index.js",
   "scripts": {
