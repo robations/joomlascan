@@ -10,6 +10,7 @@ var lineReader = require("byline");
 var path = require("path");
 var isThere = require("is-there");
 var Table = require("cli-table2");
+var stream = require("stream");
 
 var fs = Promise.promisifyAll(require("fs"));
 var _ = require("lodash");
@@ -58,8 +59,8 @@ var dir$ = RxNode
         var sep = path.sep;
         return Rx.Observable
             .merge(
-                access(x + sep + "libraries/joomla/version.php"),
                 access(x + sep + "libraries/cms/version/version.php"),
+                access(x + sep + "libraries/joomla/version.php"),
                 access(x + sep + "includes/version.php")
             )
             .reduce(
@@ -81,8 +82,12 @@ var dir$ = RxNode
 var version$ = dir$
     .flatMap(function (dir) {
         var regex = /\$(RELEASE|DEV_LEVEL)/;
-        return RxNode
-            .fromStream(lineStream(dir + path.sep + "libraries/cms/version/version.php"))
+        return Rx.Observable
+            .catch(
+                RxNode.fromReadableStream(lineStream(dir + path.sep + "libraries/cms/version/version.php")),
+                RxNode.fromReadableStream(lineStream(dir + path.sep + "libraries/joomla/version.php")),
+                RxNode.fromReadableStream(lineStream(dir + path.sep + "includes/version.php"))
+            )
             .filter(function (line) {
                 return regex.test(line);
             })
@@ -104,8 +109,8 @@ var version$ = dir$
                     devLevel: null
                 };
             }
-            var release = line.match(/\$RELEASE\b\s*=\s*['"]([0-9.]+)['"]/);
-            var devLevel = line.match(/\$DEV_LEVEL\b\s*=\s*['"]([0-9.]+)['"]/);
+            var release = line.match(/\$RELEASE\s*=\s*['"]([0-9.]+)['"]/);
+            var devLevel = line.match(/\$DEV_LEVEL\s*=\s*['"]([0-9.]+)['"]/);
             if (release !== null) {
                 agg[dir].release = release[1];
             }
@@ -119,25 +124,36 @@ var version$ = dir$
     )
 ;
 
-version$.forEach(function (x) {
-    var table = new Table({
-        head: ["Path to Joomla install", "Current version"]
-    })
-    for (var dir in x) {
-        if (x.hasOwnProperty(dir)) {
-            table.push([dir, x[dir].release + "." + x[dir].devLevel]);
+version$.subscribe(
+    function (x) {
+        var table = new Table({
+            head: ["Path to Joomla install", "Current version"]
+        });
+        for (var dir in x) {
+            if (x.hasOwnProperty(dir)) {
+                table.push([dir, x[dir].release + "." + x[dir].devLevel]);
+            }
         }
+        console.log(table.toString());
+    },
+    function (e) {
+        console.error(e);
     }
-    console.log(table.toString());
-});
+);
 
 function lineStream(filename) {
-    return lineReader(fs.createReadStream(filename, {encoding: "utf8"}));
+    var readStream = fs.createReadStream(filename, {encoding: "utf8"});
+    var lineReader2 = lineReader(readStream);
+    readStream
+        .on("error", function (e) {
+            // propagate error to outer stream:
+            lineReader2.emit("error", e);
+        })
+    ;
+    lineReader2.on("error", noop);
+
+    return lineReader2;
 }
 
-function endsWith(suffix) {
-    return function (str) {
-        return str.toLowerCase().endsWith(suffix);
-    }
+function noop() {
 }
-
