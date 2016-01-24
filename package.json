@@ -2,7 +2,6 @@
   "name": "joomlascan",
   "version": "0.0.2",
   "description": "Searches paths for Joomla installations and outputs the installed version number.",
-  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -17,6 +16,7 @@
     "meow": "^3.7.0",
     "rx": "^4.0.7",
     "rx-node": "^1.0.1",
+    "semver": "^5.1.0",
     "xmldom": "^0.1.21"
   },
   "repository": "https://github.com/robations/joomlascan",

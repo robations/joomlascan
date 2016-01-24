@@ -2,9 +2,9 @@
 
 CLI utility to find Joomla installs and get the installed version.
 
-There are many ways you might want to find Joomla installs so this utility takes a list of candidate paths
-from `stdin` and identifies the correct folders by looking for `version.php` in known locations. For example, an easy 
-way to find Joomla is using `locate`:
+There are many ways you might want to find Joomla installations, so rather than build in a variety of search methods,
+this utility takes a list of candidate paths from `stdin` and identifies the correct folders by looking for
+`version.php` in known locations. For example, an easy way to find Joomla is using `locate`:
 
 ```
 $ locate configuration.php
@@ -26,19 +26,23 @@ npm i -g joomlascan
 ```
 $ locate configuration.php | joomlascan
 $ joomlascan < mylistofjoomladirectories.txt
+$ find /var/www -name configuration.php -depth 3 | joomlascan
 ```
 
 ### Sample output:
 
 ```
-┌────────────────────────┬─────────────────┐
-│ Path to Joomla install │ Current version │
-├────────────────────────┼─────────────────┤
-│ /var/www/example.org   │ 3.3.6           │
-├────────────────────────┼─────────────────┤
-│ /var/www/example.com   │ 3.3.0           │
-└────────────────────────┴─────────────────┘
+┌────────────────────────┬─────────────────┬────────┬────────────────┐
+│ Path to Joomla install │ Install version │ Status │ Latest version │
+├────────────────────────┼─────────────────┼────────┼────────────────┤
+│ /var/www/example.org   │ 3.3.6           │ Eol    │ 3.4.8          │
+├────────────────────────┼─────────────────┼────────┼────────────────┤
+│ /var/www/example.com   │ 3.3.6           │ Eol    │ 3.4.8          │
+└────────────────────────┴─────────────────┴────────┴────────────────┘
 ```
+
+Results are sorted in ascending order of the install version.
+
 
 ## TODO
 

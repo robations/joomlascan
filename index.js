@@ -10,9 +10,10 @@ var path = require("path");
 var isThere = require("is-there");
 var Table = require("cli-table2");
 var stream = require("stream");
-
+var im = require("immutable");
 var fs = require("fs");
 var meow = require("meow");
+var semver = require("semver");
 
 var getUpdates = require("./updates");
 
@@ -103,24 +104,18 @@ var version$ = dir$
         function (agg, x) {
             var dir = x[0];
             var line = x[1];
-            if (!agg.hasOwnProperty(dir)) {
-                agg[dir] = {
-                    release: null,
-                    devLevel: null
-                };
-            }
             var release = line.match(/\$RELEASE\s*=\s*['"]([0-9.]+)['"]/);
             var devLevel = line.match(/\$DEV_LEVEL\s*=\s*['"]([0-9.]+)['"]/);
+
             if (release !== null) {
-                agg[dir].release = release[1];
+                return agg.setIn([dir, "release"], release[1]);
             }
             if (devLevel !== null) {
-                agg[dir].devLevel = devLevel[1];
+                return agg.setIn([dir, "devLevel"], devLevel[1]);
             }
-
             return agg;
         },
-        {}
+        im.Map()
     )
 ;
 
@@ -138,21 +133,25 @@ Rx.Observable
             var updates = x[0];
             var installs = x[1];
             var table = new Table({
-                head: ["Path to Joomla install", "Current version", "Status", "Latest version"]
+                head: ["Path to Joomla install", "Install version", "Status", "Latest version"]
             });
 
-            for (var dir in installs) {
-                if (installs.hasOwnProperty(dir)) {
-                    var y = installs[dir];
-
+            im.OrderedMap(installs)
+                .sort(function (a, b) {
+                    return semver.compare(
+                        a.get("release") + "." + a.get("devLevel"),
+                        b.get("release") + "." + b.get("devLevel")
+                    );
+                })
+                .forEach(function (y, dir) {
                     table.push([
                         dir,
-                        y.release + "." + y.devLevel,
-                        updates.getIn([y.release, "status"], ""),
-                        updates.getIn([y.release, "latest"], "")
+                        y.get("release") + "." + y.get("devLevel"),
+                        updates.getIn([y.get("release"), "status"], ""),
+                        updates.getIn([y.get("release"), "latest"], "")
                     ]);
-                }
-            }
+                })
+            ;
             console.log(table.toString());
         },
         function (e) {
