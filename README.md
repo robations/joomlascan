@@ -44,5 +44,6 @@ $ joomlascan < mylistofjoomladirectories.txt
 
 - No tests!
 - Offer plain text output option for automation
-- Pull in current version numbers for Joomla and flag installs that require to be updated
+- Better version handling and show more information about releases
 - Pull in and display security advisories?
+- Smarter handling of timeouts and lack of connectivity to updates.joomla.org

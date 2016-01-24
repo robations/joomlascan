@@ -1,7 +1,7 @@
 {
   "name": "joomlascan",
   "version": "0.0.1",
-  "description": "Searches paths for Joomla installs and outputs the installed version number.",
+  "description": "Searches paths for Joomla installations and outputs the installed version number.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -9,15 +9,17 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bluebird": "^3.1.1",
     "byline": "^4.2.1",
     "cli-table2": "^0.1.9",
+    "got": "^5.4.0",
+    "immutable": "^3.7.6",
     "is-there": "^4.3.1",
-    "lodash": "^4.0.0",
     "meow": "^3.7.0",
     "rx": "^4.0.7",
-    "rx-node": "^1.0.1"
+    "rx-node": "^1.0.1",
+    "xmldom": "^0.1.21"
   },
+  "repository": "https://github.com/robations/joomlascan",
   "preferGlobal": true,
   "bin": {
     "joomlascan": "index.js"

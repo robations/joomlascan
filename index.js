@@ -3,7 +3,6 @@
  * Script to scan paths from stdin for Joomla installs and find the installed version.
  */
 
-var Promise = require("bluebird");
 var Rx = require("rx");
 var RxNode = require("rx-node");
 var lineReader = require("byline");
@@ -12,9 +11,10 @@ var isThere = require("is-there");
 var Table = require("cli-table2");
 var stream = require("stream");
 
-var fs = Promise.promisifyAll(require("fs"));
-var _ = require("lodash");
+var fs = require("fs");
 var meow = require("meow");
+
+var getUpdates = require("./updates");
 
 var stat = Rx.Observable.fromNodeCallback(fs.stat);
 var access = Rx.Observable.fromCallback(isThere);
@@ -124,22 +124,41 @@ var version$ = dir$
     )
 ;
 
-version$.subscribe(
-    function (x) {
-        var table = new Table({
-            head: ["Path to Joomla install", "Current version"]
-        });
-        for (var dir in x) {
-            if (x.hasOwnProperty(dir)) {
-                table.push([dir, x[dir].release + "." + x[dir].devLevel]);
+updates$ = Rx.Observable
+    .fromPromise(getUpdates())
+;
+
+Rx.Observable
+    .combineLatest(
+        updates$,
+        version$
+    )
+    .subscribe(
+        function (x) {
+            var updates = x[0];
+            var installs = x[1];
+            var table = new Table({
+                head: ["Path to Joomla install", "Current version", "Status", "Latest version"]
+            });
+
+            for (var dir in installs) {
+                if (installs.hasOwnProperty(dir)) {
+                    var y = installs[dir];
+
+                    table.push([
+                        dir,
+                        y.release + "." + y.devLevel,
+                        updates.getIn([y.release, "status"], ""),
+                        updates.getIn([y.release, "latest"], "")
+                    ]);
+                }
             }
+            console.log(table.toString());
+        },
+        function (e) {
+            console.error(e);
         }
-        console.log(table.toString());
-    },
-    function (e) {
-        console.error(e);
-    }
-);
+    );
 
 function lineStream(filename) {
     var readStream = fs.createReadStream(filename, {encoding: "utf8"});
