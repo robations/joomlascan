@@ -39,7 +39,8 @@ var dir$ = RxNode
         return x.toString().trim();
     })
     .flatMap(function (x) {
-        return stat(x)
+        return Rx.Observable
+            .onErrorResumeNext(stat(x))
             .map(function (stats) {
                 if (stats.isDirectory()) {
                     return path.resolve(x);
