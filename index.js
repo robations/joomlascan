@@ -81,7 +81,8 @@ var dir$ = RxNode
     })
 ;
 
-var version$ = dir$
+// stream of Joomla installations:
+var install$ = dir$
     .flatMap(function (dir) {
         var regex = /\$(RELEASE|DEV_LEVEL)/;
         return Rx.Observable
@@ -120,6 +121,7 @@ var version$ = dir$
     )
 ;
 
+// stream of Joomla update information:
 updates$ = Rx.Observable
     .fromPromise(getUpdates())
 ;
@@ -127,7 +129,7 @@ updates$ = Rx.Observable
 Rx.Observable
     .combineLatest(
         updates$,
-        version$
+        install$
     )
     .subscribe(
         function (x) {
@@ -158,8 +160,15 @@ Rx.Observable
         function (e) {
             console.error(e);
         }
-    );
+    )
+;
 
+/**
+ * Creates a line-by-line stream from the given path.
+ *
+ * @param filename
+ * @returns {*}
+ */
 function lineStream(filename) {
     var readStream = fs.createReadStream(filename, {encoding: "utf8"});
     var lineReader2 = lineReader(readStream);
@@ -169,6 +178,8 @@ function lineStream(filename) {
             lineReader2.emit("error", e);
         })
     ;
+
+    // add an error handler to the outer stream to prevent uncaught exceptions:
     lineReader2.on("error", noop);
 
     return lineReader2;

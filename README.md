@@ -1,5 +1,7 @@
 # joomlascan
 
+[![NPM info](https://nodei.co/npm/joomlascan.png?downloads=true)](https://nodei.co/npm/joomlascan.png?downloads=true)
+
 CLI utility to find Joomla installs and get the installed version.
 
 There are many ways you might want to find Joomla installations, so rather than build in a variety of search methods,
