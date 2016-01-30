@@ -1,5 +1,5 @@
 var got = require("got");
-var DOMParser = require('xmldom').DOMParser;
+var DOMParser = require("xmldom").DOMParser;
 var im = require("immutable");
 
 var defaults = im.fromJS({
@@ -55,7 +55,8 @@ module.exports = function () {
 
                                 // everything before 3.4 is now EOL (as at 2016-01-24)
                                 // https://docs.joomla.org/Category:Version_History
-                                status: (versionParts[0] == 3 && versionParts[1] < 4) || versionParts[0] < 3
+                                status: (parseInt(versionParts[0], 10) === 3 && parseInt(versionParts[1], 10) < 4)
+                                    || versionParts[0] < 3
                                     ? "Eol"
                                     : "",
                                 releaseDate: null

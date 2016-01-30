@@ -9,13 +9,13 @@ var lineReader = require("byline");
 var path = require("path");
 var isThere = require("is-there");
 var Table = require("cli-table2");
-var stream = require("stream");
 var im = require("immutable");
 var fs = require("fs");
 var meow = require("meow");
 var semver = require("semver");
 
 var getUpdates = require("./updates");
+var funcs = require("./functions");
 
 var stat = Rx.Observable.fromNodeCallback(fs.stat);
 var access = Rx.Observable.fromCallback(isThere);
@@ -87,9 +87,9 @@ var install$ = dir$
         var regex = /\$(RELEASE|DEV_LEVEL)/;
         return Rx.Observable
             .catch(
-                RxNode.fromReadableStream(lineStream(dir + path.sep + "libraries/cms/version/version.php")),
-                RxNode.fromReadableStream(lineStream(dir + path.sep + "libraries/joomla/version.php")),
-                RxNode.fromReadableStream(lineStream(dir + path.sep + "includes/version.php"))
+                RxNode.fromReadableStream(funcs.lineStream(dir + path.sep + "libraries/cms/version/version.php")),
+                RxNode.fromReadableStream(funcs.lineStream(dir + path.sep + "libraries/joomla/version.php")),
+                RxNode.fromReadableStream(funcs.lineStream(dir + path.sep + "includes/version.php"))
             )
             .filter(function (line) {
                 return regex.test(line);
@@ -122,7 +122,7 @@ var install$ = dir$
 ;
 
 // stream of Joomla update information:
-updates$ = Rx.Observable
+var updates$ = Rx.Observable
     .fromPromise(getUpdates())
 ;
 
@@ -163,27 +163,3 @@ Rx.Observable
     )
 ;
 
-/**
- * Creates a line-by-line stream from the given path.
- *
- * @param filename
- * @returns {*}
- */
-function lineStream(filename) {
-    var readStream = fs.createReadStream(filename, {encoding: "utf8"});
-    var lineReader2 = lineReader(readStream);
-    readStream
-        .on("error", function (e) {
-            // propagate error to outer stream:
-            lineReader2.emit("error", e);
-        })
-    ;
-
-    // add an error handler to the outer stream to prevent uncaught exceptions:
-    lineReader2.on("error", noop);
-
-    return lineReader2;
-}
-
-function noop() {
-}
