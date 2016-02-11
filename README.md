@@ -31,6 +31,12 @@ $ joomlascan < mylistofjoomladirectories.txt
 $ find /var/www -name configuration.php -depth 3 | joomlascan
 ```
 
+Output as CSV:
+
+```
+$ locate configuration.php | joomlascan -o csv > joomla-installs.csv
+```
+
 ### Sample output:
 
 ```
@@ -43,13 +49,15 @@ $ find /var/www -name configuration.php -depth 3 | joomlascan
 └────────────────────────┴─────────────────┴────────┴────────────────┘
 ```
 
+(With default `table` output.)
+
 Results are sorted in ascending order of the install version.
 
 
 ## TODO
 
-- No tests!
-- Offer plain text output option for automation
+- Still no tests!
+- ~~Offer plain text output option for automation~~
 - Better version handling and show more information about releases
 - Pull in and display security advisories?
 - Smarter handling of timeouts and lack of connectivity to updates.joomla.org

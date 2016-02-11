@@ -13,6 +13,7 @@ var im = require("immutable");
 var fs = require("fs");
 var meow = require("meow");
 var semver = require("semver");
+var csv = require("fast-csv");
 
 var getUpdates = require("./updates");
 var funcs = require("./functions");
@@ -22,16 +23,49 @@ var access = Rx.Observable.fromCallback(isThere);
 var stdIn = lineReader(process.stdin);
 
 
-var cli = meow({
-    help: [
+var cli = meow(
+    [
         "Usage:",
         "  $ joomlascan < paths_to_joomla_files_or_dirs.txt",
         "",
+        "Options:",
+        "  -o, --output  (table|csv) Output type. Defaults to table.",
+        "  --help        Displays this help.",
+        "  --version     Displays version number.",
+        "",
         "Examples",
-        "  locate joomla.xml | joomlascan",
-        "  find /var/www -name 'joomla.xml' -depth 3 | joomlascan"
-    ]
+        "  locate configuration.php | joomlascan",
+        "  find /var/www -name 'joomla.xml' -depth 3 | joomlascan",
+        "  locate configuration.php | joomlascan -o csv > joomla-installs.csv"
+    ],
+    {
+        alias: {
+            o: "output"
+        },
+        string: ["output"],
+        default: {
+            output: "table"
+        }
+    }
+);
+
+// this allows piping to head without errors:
+process.stdout.on("error", function (err) {
+    if (err.code == "EPIPE") {
+        process.exit(0);
+    }
 });
+
+// output function
+var output = (function () {
+    switch (cli.flags.output.toLowerCase()) {
+        case "table":
+            return funcs.tableOutput(Table);
+        default:
+            return funcs.csvOutput(process.stdout, csv);
+    }
+}());
+
 
 var dir$ = RxNode
     .fromStream(stdIn)
@@ -131,32 +165,20 @@ Rx.Observable
         updates$,
         install$
     )
-    .subscribe(
-        function (x) {
-            var updates = x[0];
-            var installs = x[1];
-            var table = new Table({
-                head: ["Path to Joomla install", "Install version", "Status", "Latest version"]
-            });
-
-            im.OrderedMap(installs)
+    .map(function (x) {
+        return {
+            updates: x[0],
+            installs: im.OrderedMap(x[1])
                 .sort(function (a, b) {
                     return semver.compare(
                         a.get("release") + "." + a.get("devLevel"),
                         b.get("release") + "." + b.get("devLevel")
                     );
                 })
-                .forEach(function (y, dir) {
-                    table.push([
-                        dir,
-                        y.get("release") + "." + y.get("devLevel"),
-                        updates.getIn([y.get("release"), "status"], ""),
-                        updates.getIn([y.get("release"), "latest"], "")
-                    ]);
-                })
-            ;
-            console.log(table.toString());
-        },
+        }
+    })
+    .subscribe(
+        output,
         function (e) {
             console.error(e);
         }
