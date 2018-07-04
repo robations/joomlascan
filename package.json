@@ -9,7 +9,7 @@
   "license": "ISC",
   "dependencies": {
     "byline": "^4.2.1",
-    "cli-table2": "^0.1.9",
+    "cli-table3": "^0.5.0",
     "fast-csv": "^1.0.0",
     "got": "^5.4.0",
     "immutable": "^3.7.6",
