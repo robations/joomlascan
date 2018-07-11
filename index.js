@@ -121,6 +121,7 @@ var install$ = dir$
         var regex = /\$(RELEASE|DEV_LEVEL)/;
         return Rx.Observable
             .catch(
+                RxNode.fromReadableStream(funcs.lineStream(dir + path.sep + "libraries/src/Version.php")),
                 RxNode.fromReadableStream(funcs.lineStream(dir + path.sep + "libraries/cms/version/version.php")),
                 RxNode.fromReadableStream(funcs.lineStream(dir + path.sep + "libraries/joomla/version.php")),
                 RxNode.fromReadableStream(funcs.lineStream(dir + path.sep + "includes/version.php"))
