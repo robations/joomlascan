@@ -56,7 +56,7 @@ function csvOutput(writableStream, csv) {
 /**
  * Creates a function to output as a pretty printed table
  *
- * @param Table cli-table2
+ * @param Table cli-table3
  * @returns {Function}
  */
 function tableOutput(Table) {
