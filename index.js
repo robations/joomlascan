@@ -95,6 +95,7 @@ var dir$ = RxNode
         var sep = path.sep;
         return Rx.Observable
             .merge(
+                access(x + sep + "libraries/src/Version.php"),
                 access(x + sep + "libraries/cms/version/version.php"),
                 access(x + sep + "libraries/joomla/version.php"),
                 access(x + sep + "includes/version.php")
@@ -118,7 +119,8 @@ var dir$ = RxNode
 // stream of Joomla installations:
 var install$ = dir$
     .flatMap(function (dir) {
-        var regex = /\$(RELEASE|DEV_LEVEL)/;
+        // Note in earlier versions this can be $RELEASE, but later changed to a const RELEASE
+        var regex = /\b(RELEASE|DEV_LEVEL)/;
         return Rx.Observable
             .catch(
                 RxNode.fromReadableStream(funcs.lineStream(dir + path.sep + "libraries/src/Version.php")),
@@ -141,8 +143,8 @@ var install$ = dir$
         function (agg, x) {
             var dir = x[0];
             var line = x[1];
-            var release = line.match(/\$RELEASE\s*=\s*['"]([0-9.]+)['"]/);
-            var devLevel = line.match(/\$DEV_LEVEL\s*=\s*['"]([0-9.]+)['"]/);
+            var release = line.match(/\bRELEASE\s*=\s*['"]([0-9.]+)['"]/);
+            var devLevel = line.match(/\bDEV_LEVEL\s*=\s*['"]([0-9.]+)['"]/);
 
             if (release !== null) {
                 return agg.setIn([dir, "release"], release[1]);
